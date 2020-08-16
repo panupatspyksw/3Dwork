@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>My first three.js app</title>
+		<style>
+			body { margin: 0; }
+			canvas { display: block; }
+		</style>
+	</head>
+	<body>
+        <script src="three.js"></script>
+        <script type="module">
+            import { GLTFLoader } from '/node_modules/three/examples/jsm/loaders/GLTFLoader.js';
+
+			import * as THREE from '/node_modules/three/build/three.module.js';
+
+			var camera, scene, renderer;
+			var mesh;
+			var AMOUNT = 6;
+			var y = 1;
+
+
+
+				var ASPECT_RATIO = window.innerWidth / window.innerHeight;
+
+				var WIDTH = ( window.innerWidth / AMOUNT ) * window.devicePixelRatio;
+				var HEIGHT = ( window.innerHeight / AMOUNT ) * window.devicePixelRatio;
+
+				var cameras = [];
+
+				for ( var y = 0; y < 6; y ++ ) {
+					
+
+					for ( var x = 0; x < AMOUNT; x ++ ) {
+
+                        var subcamera = new THREE.PerspectiveCamera( 50, ASPECT_RATIO, 0.1, 10 );
+                        // console.log("x:" + Math.floor( x * WIDTH ));
+                        // console.log("y:" + Math.floor( y * HEIGHT ));
+                        // console.log("width:" + Math.floor( WIDTH+1 ));
+                        // console.log("height:" + Math.floor( HEIGHT+1 ));
+
+
+						subcamera.viewport = new THREE.Vector4( Math.floor( x * WIDTH ), Math.floor( y * HEIGHT ), Math.floor( WIDTH+1 ), Math.floor( HEIGHT+1 ) );
+						subcamera.position.x = ( x / AMOUNT ) - 0.5;
+						subcamera.position.y = 1 - ( y / AMOUNT );
+                        subcamera.position.z = 2.2;
+                        //scale / zoom in camera
+						subcamera.position.multiplyScalar( 2 );
+						subcamera.lookAt( 0, 0, 0 );
+						subcamera.updateMatrixWorld();
+						cameras.push( subcamera );
+
+					}
+
+				}
+
+				camera = new THREE.ArrayCamera( cameras );
+				camera.position.z = 3;
+
+                scene = new THREE.Scene();
+                scene.background = new THREE.Color(0x000000);
+                //purple shadow color
+				scene.add( new THREE.AmbientLight( 0x222244 ) );
+
+                var spotLight = new THREE.SpotLight( 0xffffff );
+                spotLight.position.set( 10, 10, 10 );
+                scene.add( spotLight );
+
+                //     var light = new THREE.AmbientLight(0xff0000, 0.5);
+                // scene.add(light);
+                
+                var light2 = new THREE.PointLight(0xffffff, 0.5);
+                scene.add(light2);
+                //background color
+                //width and height of plane or baclground frame
+                var geometry = new THREE.PlaneBufferGeometry( 100, 100 );
+                //color of background frame
+				var material = new THREE.MeshPhongMaterial( { color: 0xffffff } );
+                //change to a mesh to be object
+                var background = new THREE.Mesh( geometry, material );
+                //shadow of background to recieve ??
+				background.receiveShadow = true;
+				background.position.set( 0, 0, 0 );
+				scene.add( background );
+
+
+				// var geometry = new THREE.CylinderBufferGeometry( 0.5, 0.5, 1, 32 );
+				// var material = new THREE.MeshPhongMaterial( { color: 0xff0000 } );
+
+                // mesh = new THREE.Mesh( geometry, material );
+                // //shadow of shape
+				// mesh.castShadow = true;
+				// mesh.receiveShadow = true;
+				// scene.add( mesh );
+
+                var loader2 = new GLTFLoader();
+                
+                var mesh;
+
+                loader2.load( 'monkeygray.glb', function ( gltf ) {
+                    console.log(gltf);
+                mesh = gltf.scene;
+                console.log(mesh.children[0]);
+                mesh.children[0].material = new THREE.MeshLambertMaterial( { color: 0xff0000 } );
+                mesh.color = 0x000000;
+				mesh.castShadow = true;
+
+                scene.add( mesh );
+                // mesh.scale(0,0,0);
+                mesh.position.z = 1;
+
+                }, undefined, function ( error ) {
+
+                    console.error( error );
+
+                } );
+
+
+
+
+                //simply creating scene
+				renderer = new THREE.WebGLRenderer();
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.shadowMap.enabled = true;
+				document.body.appendChild( renderer.domElement );
+
+				//call resize window function
+
+				window.addEventListener( 'resize', onWindowResize, true );
+
+			
+            //resize window function
+
+			function onWindowResize() {
+
+				var ASPECT_RATIO = window.innerWidth / window.innerHeight;
+				var WIDTH = ( window.innerWidth / AMOUNT ) * window.devicePixelRatio;
+				var HEIGHT = ( window.innerHeight / AMOUNT ) * window.devicePixelRatio;
+
+				camera.aspect = ASPECT_RATIO;
+				camera.updateProjectionMatrix();
+
+                //change size camera to any frame
+				for ( var y = 0; y < AMOUNT; y ++ ) {
+
+					for ( var x = 0; x < AMOUNT; x ++ ) {
+
+						var subcamera = camera.cameras[ AMOUNT * y + x ];
+
+						subcamera.viewport.set(
+							Math.floor( x * WIDTH ),
+							Math.floor( y * HEIGHT ),
+							Math.ceil( WIDTH ),
+							Math.ceil( HEIGHT ) );
+
+						subcamera.aspect = ASPECT_RATIO;
+						subcamera.updateProjectionMatrix();
+
+					}
+
+				}
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+
+            //loop for animate simply thing
+			function animate() {
+                onWindowResize();
+            if(mesh){
+                mesh.rotation.y += 0.01
+                mesh.rotation.z += 0.01;
+                mesh.rotation.x += 0.005
+
+            }
+            // mesh.rotation.x += 0.01;
+
+				renderer.render( scene, camera );
+
+				requestAnimationFrame( animate );
+
+            }
+            
+			animate();
+
+		</script>
+	</body>
+</html>

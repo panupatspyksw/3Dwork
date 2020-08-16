@@ -1,0 +1,147 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>My first three.js app</title>
+		<style>
+			body { margin: 0; 
+            overflow: hidden;}
+			canvas { 
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            }
+            h1{
+                color: white;
+                position: absolute;
+                margin: 0 auto;
+                font-size: 30px;
+                top: 10px;
+	            width: 100%; 
+                text-align: center;
+            }
+
+            div{
+            
+                margin-left:2%;
+                position: absolute;
+                top: 50%;
+                -ms-transform: translateY(-50%);
+                transform: translateY(-50%);
+            }
+
+            button{
+                height: 50px;
+                margin-bottom: 2em;
+                width: 200px;
+            }
+        </style>
+	</head>
+	<body>
+        
+        <canvas id="myCanvas" width="50%"></canvas>
+
+
+		<script src="three.js"></script>
+		<script type="module">
+            import { GLTFLoader } from '/node_modules/three/examples/jsm/loaders/GLTFLoader.js';
+    
+            var scene = new THREE.Scene();
+            var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+            scene.background = new THREE.Color(0x000000);
+            var renderer = new THREE.WebGLRenderer({ canvas: myCanvas,antialias: true });
+            renderer.setSize( window.innerWidth, window.innerHeight);
+            // renderer.setViewport(1,1,500,500)
+
+            // document.body.appendChild( renderer.domElement );
+            // document.getElementsByTagName("canvas").appendChild( renderer.domElement )
+			// Our Javascript will go here.
+            var colors = new THREE.Color(0xff0000);
+
+            var light = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(light);
+
+            var light2 = new THREE.PointLight(0xffffff, 0.5);
+            scene.add(light2);
+
+            //Change Color Button System
+            var changgecolor = true;
+            document.querySelector("#color").addEventListener("click",function(event){
+                if(changgecolor === true){
+                scene.remove(light);
+
+                light = new THREE.AmbientLight(colors, 0.5);
+                scene.add(light);
+                scene.remove(light2);
+
+                light2 = new THREE.PointLight(colors, 0.5);
+                scene.add(light2);
+                changgecolor = false;
+                }
+                else{
+                scene.remove(light);
+                light = new THREE.AmbientLight(0xffffff, 0.5);
+                scene.add(light);
+                scene.remove(light2);
+
+                light2 = new THREE.PointLight(0xffffff, 0.5);
+                scene.add(light2);
+                changgecolor = true;
+                }
+            })
+
+            //PAUSE BUTTON
+            var play = true;
+            document.querySelector("#pause").addEventListener("click",function(event){
+                if(play === true){
+                play = false;
+                document.querySelector("#pause").innerHTML = "PAUSE";
+                }
+                else{
+                document.querySelector("#pause").innerHTML = "PLAY";
+                play = true;
+                }
+            })
+
+            var loader = new GLTFLoader();
+            var loader2 = new GLTFLoader();
+   
+            var mesh3;
+
+            loader2.load( 'monkeygray.glb', function ( gltf ) {
+                console.log(gltf);
+                mesh3 = gltf.scene;
+                console.log(mesh3.children[0]);
+                mesh3.children[0].material = new THREE.MeshLambertMaterial();
+                scene.add( mesh3 );
+                // mesh.scale(0,0,0);
+                mesh3.position.z = -3;
+                mesh3.position.x = 0;
+                
+            }, undefined, function ( error ) {
+
+                console.error( error );
+
+            } );
+
+            render();
+
+            function render() {
+            requestAnimationFrame(render);
+            if (play===true){
+            mesh3.rotation.x += 0.01;
+            }
+            // render the scene
+            renderer.render(scene, camera);
+
+            };
+        </script>
+        
+
+
+        <h1>THE MONKEY</h1>
+        <div>
+        <button id="color">CHANGE COLOR</button><br>
+        <button id="pause">PLAY</button>
+        </div>
+	</body>
+</html>
